@@ -1,0 +1,158 @@
+1. Affichez le nombre d'attributs par document ainsi que l'attribut name. Combien y a-t-il d'attribut par document ? N'affichez que les 12 premières lignes avec la commande head (notebook #2).attributes_count
+{
+  "name": "Luke Skywalker",
+  "attribute_count": 17
+}
+{
+  "name": "C-3PO",
+  "attribute_count": 17
+}
+{
+  "name": "R2-D2",
+  "attribute_count": 17
+}
+Commande : cat ../people.json  | jq .[] | jq '{name, attribute_count: length }' | head -n 12
+Réponse : 17
+
+---------------------------------
+
+2. Combien y a-t-il de valeur unknown pour l'attribut birth_year ? Utilisez la commande tail afin d'isoler la réponse
+{
+  "gender": "unknown",
+  "count": 42
+}
+Commande : cat ../people.json | jq 'group_by(.birth_year)[] | {gender: .[0].birth_year, count: length}'  | tail -n 4
+Réponse : 42
+
+---------------------------------
+
+3. Affichez la date de création de chaque personnage et son nom. La date de création doit être de cette forme : l'année, le mois et le jour. N'affichez que les 10 premières lignes. (Pas de Réponse attendue)
+{
+  "name": "Luke Skywalker",
+  "created": "2014-12-09"
+}
+{
+  "name": "C-3PO",
+  "created": "2014-12-10"
+}
+{
+  "name": "R2-D2",
+Commande : cat ../people.json  | jq .[] | jq '{name, created: .created[:10] }' | head -n 10 
+
+---------------------------------
+
+4. Certains personnages sont nés en même temps. Retrouvez toutes les pairs d'ids (2 ids) des personnages nés en même temps.
+{
+  "birth_year": "19BBY",
+  "ids": [
+    {
+      "id": 1
+    },
+    {
+      "id": 5
+    }
+  ]
+}
+{
+  "birth_year": "41.9BBY",
+  "ids": [
+    {
+      "id": 4
+    },
+    {
+      "id": 11
+    }
+  ]
+}
+{
+  "birth_year": "52BBY",
+  "ids": [
+    {
+      "id": 6
+    },
+    {
+      "id": 36
+    }
+  ]
+}
+{
+  "birth_year": "72BBY",
+  "ids": [
+    {
+      "id": 43
+    },
+    {
+      "id": 51
+    }
+  ]
+}
+{
+  "birth_year": "82BBY",
+  "ids": [
+    {
+      "id": 21
+    },
+    {
+      "id": 62
+    }
+  ]
+}
+{
+  "birth_year": "92BBY",
+  "ids": [
+    {
+      "id": 32
+    },
+    {
+      "id": 52
+    }
+  ]
+}
+Commande :  cat ../people.json  | jq 'group_by(.birth_year) | map((first | {birth_year}) + {ids: map({id})})' | jq '.[] | select(.ids | length == 2)'
+ 
+
+---------------------------------
+
+5. Renvoyez le numéro du premier film (de la liste) dans lequel chaque personnage a été vu suivi du nom du personnage. N'affichez que les 10 premières lignes. (Pas de Réponse attendue)
+{
+  "first_movie": "3",
+  "name": "Luke Skywalker"
+}
+{
+  "first_movie": "4",
+  "name": "C-3PO"
+}
+{
+  "first_movie": "4",
+  "name": "R2-D2"
+}
+Commande :  cat ../people.json  | jq .[] | jq '{first_movie : .films[1] | ltrimstr(http://swapi.co/api/films/) | rtrimstr(/) , name }' | head -n 10
+
+---------------------------------
+
+
+----------------BONUS----------------
+
+
+---------------------------------
+
+6. Supprimez les documents lorsque l'attribut height n'est pas un nombre
+Commande :  cat ../people.json | jq 'del(.[] | select(.height | test([^0-9])))'  > bonus/people_6.txt
+
+---------------------------------
+
+7. Transformer l'attribut height en nombre.
+Commande :  cat bonus/people_6.txt | jq 'map(.height |= tonumber)'  > bonus/people_7.txt
+
+---------------------------------
+
+8. Ne renvoyez que les personnages dont la taille est entre 156 et 171.
+Commande :   cat bonus/people_7.txt | jq 'map(select( .height  > 156 and .height < 171 ))' > bonus/people_8.txt
+
+---------------------------------
+
+9. Renvoyez le plus petit individu de people_8.json et affichez cette phrase en une seule commande.
+Commande :   cat bonus/people_8.txt | jq 'min_by(.height) | "\(.name) is \(.height) tall"'  > bonus/people_9.txt
+
+---------------------------------
+
